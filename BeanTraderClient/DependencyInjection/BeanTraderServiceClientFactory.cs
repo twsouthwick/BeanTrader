@@ -1,26 +1,51 @@
-﻿using System;
-using System.Configuration;
+﻿using Microsoft.Extensions.DependencyInjection;
+using ServiceModel.Configuration;
+using System;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 
 namespace BeanTraderClient.DependencyInjection
 {
-    public class BeanTraderServiceClientFactory
+    public sealed class BeanTraderServiceClientFactory : IDisposable
     {
-        private BeanTraderServiceCallback CallbackHandler { get; }
+        private readonly ServiceProvider provider;
 
         public BeanTraderServiceClientFactory(BeanTraderServiceCallback callbackHandler)
         {
-            CallbackHandler = callbackHandler;
+            provider = CreateServiceProvider(callbackHandler);
         }
 
         public BeanTraderServiceClient GetServiceClient()
         {
-            var binding = new NetTcpBinding();
-            binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Certificate;
-
-            var endpointAddress = new EndpointAddress(new Uri(ConfigurationManager.AppSettings["BeanTraderEndpointAddress"]), new DnsEndpointIdentity("BeanTrader"));
-
-            return new BeanTraderServiceClient(new InstanceContext(CallbackHandler), binding, endpointAddress);
+            return provider.GetRequiredService<BeanTraderServiceClient>();
         }
+
+        private static ServiceProvider CreateServiceProvider(BeanTraderServiceCallback callback)
+        {
+            var services = new ServiceCollection();
+
+            services.AddSingleton(callback);
+            services.AddServiceModelClient()
+                .AddConfigurationManagerFile("wcf.config");
+            services.AddSingleton<BeanTraderServiceClient>();
+
+            return services.BuildServiceProvider();
+        }
+
+        public void Dispose() => provider.Dispose();
+    }
+}
+
+public partial class BeanTraderServiceClient
+{
+    public BeanTraderServiceClient(BeanTraderServiceCallback callback, IChannelFactoryProvider provider)
+        : this(new InstanceContext(callback), provider.GetEndpoint<BeanTraderService>())
+    {
+    }
+
+    private BeanTraderServiceClient(InstanceContext callback, ServiceEndpoint endpoint)
+        : this(callback, endpoint.Binding, endpoint.Address)
+    {
+
     }
 }

@@ -194,11 +194,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
+      <Version>2.1.0</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
       <Version>2.29.0</Version>
     </PackageReference>
     <PackageReference Include="Nito.AsyncEx">
       <Version>4.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="ServiceModel.Configuration.ConfigurationManager">
+      <Version>0.1.0-ci.73</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
